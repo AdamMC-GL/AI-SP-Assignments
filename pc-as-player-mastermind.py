@@ -83,7 +83,7 @@ def make_next_guess(all_possible_combinations):
 
 def main():
     gemtries = 0
-    for total in range(1,11):  # om het spel 100 keer te gespeeld te laten worden
+    for total in range(1,11):  # om het spel 10 keer gespeeld te laten worden
         hidden_code = MakeHiddenCode()
 
         all_possible_combinations = make_all_possibilities()
