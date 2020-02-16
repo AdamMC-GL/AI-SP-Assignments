@@ -1,29 +1,30 @@
 import sys
 import random
 
-def PlayerInput_HiddenCode():
-        hidden_code = []
-        print('Make a code for the computer to guess. \nChoose from: \033[36m(red, green, blue, yellow, brown, orange)\033[35m')
-        for code_amount in range(1, 5):
-            pick = input('Pick color '+str(code_amount)+': ')
-            hidden_code.append(pick)
 
-        print('Your hidden code is: \033[34m' + str(hidden_code) + '\033[35m')
-        return hidden_code
+def PlayerInput_HiddenCode():
+    hidden_code = []
+    print('Make a code for the computer to guess. \nChoose from: \033[36m(red, green, blue, yellow, brown, orange)\033[35m')
+    for code_amount in range(1, 5):
+        pick = input('Pick color '+str(code_amount)+': ')
+        hidden_code.append(pick)
+
+    print('Your hidden code is: \033[34m' + str(hidden_code) + '\033[35m')
+    return hidden_code
 
 
 def PlayerInput_Feedback():
-        print('Give the computer the\033[32m correct\033[35m feedback about the guess') # bron: https://ozzmaker.com/add-colour-to-text-in-python/
-        Redpins = int(input('Amount\033[31m red\033[35m: '))
-        Whitepins = int(input('Amount\033[39m white\033[35m: '))
-        return Redpins, Whitepins
+    print('Give the computer the\033[32m correct\033[35m feedback about the guess')  # bron: https://ozzmaker.com/add-colour-to-text-in-python/
+    Redpins = int(input('Amount\033[31m red\033[35m: '))
+    Whitepins = int(input('Amount\033[39m white\033[35m: '))
+    return Redpins, Whitepins
 
 
 def make_all_possibilities():
     # Makes a large list of every single possible combination of guesses.
     all_colors = ('red', 'green', 'blue', 'yellow', 'brown', 'orange')
     all_possibilities = []
-    for i in all_colors: # Looks at every possible color and via 4 nested loops it puts every color once, with every other color.
+    for i in all_colors:  # Looks at every possible color and via 4 nested loops it puts every color once, with every other color.
         for j in all_colors:
             for k in all_colors:
                 for l in all_colors:
@@ -33,8 +34,7 @@ def make_all_possibilities():
 
 def Remove_possibilities(all_possible_combinations, guess, redPinCount, whitePinCount):
     # removing ever possibility that can never be the answer
-    print(len(all_possible_combinations))
-    Return_list=[]
+    Return_list = []
     all_possible_combinations.remove(guess)  # removing the last guess specifically
     for items in all_possible_combinations:
         if checkPins(guess, items) == (redPinCount, whitePinCount):
@@ -50,9 +50,9 @@ def make_next_guess(all_possible_combinations):
     wait_animation = [" [=     ]", " [ =    ]", " [  =   ]", " [   =  ]", " [    = ]", " [     =]", " [    = ]", " [   =  ]", " [  =   ]", " [ =    ]"]
     animation_loop_counter = 0
     bestcombi = None
-    for items in all_possible_combinations:
+    for Every_combination_as_guess in all_possible_combinations:
 
-        guess = items
+        guess = Every_combination_as_guess
         List_Data_to_calculate = []
 
         allfeedback = [(0, 0), (0, 1), (0, 2), (0, 3), (0, 4),
@@ -66,9 +66,9 @@ def make_next_guess(all_possible_combinations):
             animation_loop_counter += 1
 
             Templist = []
-            for items in all_possible_combinations:
-                if checkPins(guess, items) != items_feedback:
-                    Templist.append(items)
+            for Every_combination_as_code in all_possible_combinations:
+                if checkPins(guess, Every_combination_as_code) != items_feedback:
+                    Templist.append(Every_combination_as_code)
 
             Data_to_calculate = len(all_possible_combinations) - len(Templist)
             List_Data_to_calculate.append(Data_to_calculate)
@@ -105,7 +105,15 @@ def player_make_guess():
 
 
 def Show_manual():
-    print('How to play: ')
+    print('How to play: To outsmart your opponent with a clever code or great guesswork.\n'
+          '------------------------------------------------------------------------------------------------------------------------------------\n'
+          'As the Codemaker: your goal is to set a mystery code so cunning that it will keep your opponent guessing for as long as possible.\n'
+          'You provide feedback per guess with white and red pins, a red pins states a correct color in the correct player,\n'
+          'a white color states a correct color in the wrong place\n'
+          '------------------------------------------------------------------------------------------------------------------------------------\n'
+          'As the Guesser: you must break the secret code in the fewest number of guesses.\n'
+          'You provide 4 colors as a guess of the secret code, if it is not the secret code you will be provided with feedback about your guess\n'
+          'A red pins states a correct color in the correct player, a white color states a correct color in the wrong place')
 
 
 def End_screen(win):
@@ -177,7 +185,7 @@ def main():
         guess = ['red', 'red', 'green', 'blue']  # First guess
 
         # Game starts here
-        for numbers in range(1, 12):
+        for tries in range(1, 12):
             print('\nThe computer gave \033[36m'+str(guess)+'\033[35m as guess')
 
             redPinCount, whitePinCount = None, None
@@ -187,35 +195,37 @@ def main():
 
             if redPinCount == 4:
                 End_screen(False)
+                print('Tries needed: ' + str(tries))
                 break
-            if numbers == 11:
+            if tries == 11:
                 End_screen(True)
                 break
 
             all_possible_combinations = Remove_possibilities(all_possible_combinations, guess, redPinCount, whitePinCount)
             guess = make_next_guess(all_possible_combinations)
 
-    while True:  # replay the game unless specified otherwise.
-        while True:  # nested loop to let the game modes break out from, but let the manual stay in it
-            print('Do you want to play as guesser or codemaker?')
-            Game_mode = input('Guesser / Codemaker / Manual: ')
-            Game_mode = Game_mode.lower()
-            if 'gues' in Game_mode:
-                player_as_guesser()
-                break
-            elif 'man' in Game_mode:
-                Show_manual()
-            else:
-                computer_as_guesser()
-                break
-        # break out of parent loop if player says no
-        print('Do you want to play again?')
-        replay = input('Yes / No: ')
-        replay = replay.lower()
-        if 'n' in replay:
+    while True:
+        print('Do you want to play as guesser or codemaker?')
+        Game_mode = input('Guesser / Codemaker / Manual: ')
+        Game_mode = Game_mode.lower()
+        if 'gues' in Game_mode:
+            player_as_guesser()
+            break
+        elif 'man' in Game_mode:
+            Show_manual()
+        else:
+            computer_as_guesser()
             break
 
 
 if __name__ == "__main__":  # bron: Casper
     print('\033[35mWelcome to Mastermind.')
-    main()
+    while True:  # replay the game unless specified otherwise.
+        main()
+        # break out of main loop if player says no.
+        print('Do you want to play again?')
+        replay = input('Yes / No: ')
+        replay = replay.lower()
+        if 'n' in replay:
+            break
+    print('Goodbye')
