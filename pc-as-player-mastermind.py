@@ -3,21 +3,28 @@ import random
 
 
 def PlayerInput_HiddenCode():
+    code_index = 1
     hidden_code = []
-    print('Make a code for the computer to guess. \nChoose from: \033[36m(red, green, blue, yellow, brown, orange)\033[35m')
-    for code_amount in range(1, 5):
-        pick = input('Pick color '+str(code_amount)+': ')
-        hidden_code.append(pick)
+    all_colors = ('red', 'green', 'blue', 'yellow', 'brown', 'orange')
+    print('Make a code for the computer to guess. \nChoose from: \033[36m'+str(all_colors)+'\033[35m')
+    while code_index != 5:
+        pick = input('Pick color '+str(code_index)+': ')
+        if pick in all_colors:
+            code_index += 1
+            hidden_code.append(pick)
 
     print('Your hidden code is: \033[34m' + str(hidden_code) + '\033[35m')
     return hidden_code
 
 
 def PlayerInput_Feedback():
+    allowed_ansers = ['0', '1', '2', '3', '4']
     print('Give the computer the\033[32m correct\033[35m feedback about the guess')  # bron: https://ozzmaker.com/add-colour-to-text-in-python/
-    Redpins = int(input('Amount\033[31m red\033[35m: '))
-    Whitepins = int(input('Amount\033[39m white\033[35m: '))
-    return Redpins, Whitepins
+    while True:
+        Redpins = input('Amount\033[31m red\033[35m: ')
+        Whitepins = input('Amount\033[39m white\033[35m: ')
+        if Redpins in allowed_ansers and Whitepins in allowed_ansers:
+            return int(Redpins), int(Whitepins)
 
 
 def make_all_possibilities():
@@ -32,56 +39,68 @@ def make_all_possibilities():
     return all_possibilities
 
 
-def Remove_possibilities(all_possible_combinations, guess, redPinCount, whitePinCount):
+def Remove_possibilities(all_possible_combinations, guess, redPinCount, whitePinCount, Difficulty):
     # removing ever possibility that can never be the answer
-    Return_list = []
-    all_possible_combinations.remove(guess)  # removing the last guess specifically
-    for items in all_possible_combinations:
-        if checkPins(guess, items) == (redPinCount, whitePinCount):
-            Return_list.append(items)
+    if Difficulty == 2:
+        Return_list = []
+        for items in all_possible_combinations:
+            if checkPins(guess, items) == (redPinCount, whitePinCount):
+                Return_list.append(items)
 
-    return Return_list
+        return Return_list
+
+    else:
+        all_possible_combinations.remove(guess)
+        for Every_combination in all_possible_combinations:
+            if checkPins(guess, Every_combination) != (redPinCount, whitePinCount):
+                all_possible_combinations.remove(Every_combination)
+        return all_possible_combinations
 
 
-def make_next_guess(all_possible_combinations):
-    print('Calculating new guess...')
+def make_next_guess(all_possible_combinations, Difficulty):
+    if Difficulty == 2:
+        print('Calculating new guess...')
 
-    best_expected_size = float('inf')
-    wait_animation = [" [=     ]", " [ =    ]", " [  =   ]", " [   =  ]", " [    = ]", " [     =]", " [    = ]", " [   =  ]", " [  =   ]", " [ =    ]"]
-    animation_loop_counter = 0
-    bestcombi = None
-    for Every_combination_as_guess in all_possible_combinations:
+        best_expected_size = float('inf')
+        wait_animation = [" [=     ]", " [ =    ]", " [  =   ]", " [   =  ]", " [    = ]", " [     =]", " [    = ]", " [   =  ]", " [  =   ]", " [ =    ]"]
+        animation_loop_counter = 0
+        bestcombi = None
+        for Every_combination_as_guess in all_possible_combinations:
 
-        guess = Every_combination_as_guess
-        List_Data_to_calculate = []
+            guess = Every_combination_as_guess
+            List_Data_to_calculate = []
 
-        allfeedback = [(0, 0), (0, 1), (0, 2), (0, 3), (0, 4),
-                       (1, 0), (1, 1), (1, 2), (1, 3),
-                       (2, 0), (2, 1), (2, 2),
-                       (3, 0), (4, 0)]
+            allfeedback = [(0, 0), (0, 1), (0, 2), (0, 3), (0, 4),
+                           (1, 0), (1, 1), (1, 2), (1, 3),
+                           (2, 0), (2, 1), (2, 2),
+                           (3, 0), (4, 0)]
 
-        for items_feedback in allfeedback:
-            sys.stdout.write("\r" + wait_animation[animation_loop_counter % len(wait_animation)])  # bron: https://stackoverflow.com/questions/7039114/waiting-animation-in-command-prompt-python
-            sys.stdout.flush()
-            animation_loop_counter += 1
+            for items_feedback in allfeedback:
+                sys.stdout.write("\r" + wait_animation[animation_loop_counter % len(wait_animation)])  # bron: https://stackoverflow.com/questions/7039114/waiting-animation-in-command-prompt-python
+                sys.stdout.flush()
+                animation_loop_counter += 1
 
-            Templist = []
-            for Every_combination_as_code in all_possible_combinations:
-                if checkPins(guess, Every_combination_as_code) != items_feedback:
-                    Templist.append(Every_combination_as_code)
+                Templist = []
+                for Every_combination_as_code in all_possible_combinations:
+                    if checkPins(guess, Every_combination_as_code) != items_feedback:
+                        Templist.append(Every_combination_as_code)
 
-            Data_to_calculate = len(all_possible_combinations) - len(Templist)
-            List_Data_to_calculate.append(Data_to_calculate)
+                Data_to_calculate = len(all_possible_combinations) - len(Templist)
+                List_Data_to_calculate.append(Data_to_calculate)
 
-        Expectend_size = 0
-        for items in List_Data_to_calculate:
-            Expectend_size += ((items ** 2) / len(all_possible_combinations))
+            Expectend_size = 0
+            for items in List_Data_to_calculate:
+                Expectend_size += ((items ** 2) / len(all_possible_combinations))
 
-        if Expectend_size < best_expected_size:
-            best_expected_size = Expectend_size
-            bestcombi = guess
+            if Expectend_size < best_expected_size:
+                best_expected_size = Expectend_size
+                bestcombi = guess
 
-    return bestcombi
+        return bestcombi
+
+    else:
+        bestcombi = random.choice(all_possible_combinations)
+        return bestcombi
 
 
 def make_hidden_code():
@@ -89,7 +108,7 @@ def make_hidden_code():
     all_colors = ('red', 'green', 'blue', 'yellow', 'brown', 'orange')
 
     for color_pick in range(4):
-        all_colors_index_picked = random.randint(0, 5)
+        all_colors_index_picked = random.randint(0, 5)  # Choosing a random number 4 times instead of making a list of 4 number to allow for duplicates.
         hidden_code.append(all_colors[all_colors_index_picked])
     return hidden_code
 
@@ -106,13 +125,13 @@ def player_make_guess():
 
 def Show_manual():
     print('How to play: To outsmart your opponent with a clever code or great guesswork.\n'
-          '------------------------------------------------------------------------------------------------------------------------------------\n'
-          'As the Codemaker: your goal is to set a mystery code so cunning that it will keep your opponent guessing for as long as possible.\n'
-          'You provide feedback per guess with white and red pins, a red pins states a correct color in the correct player,\n'
-          'a white color states a correct color in the wrong place\n'
-          '------------------------------------------------------------------------------------------------------------------------------------\n'
-          'As the Guesser: you must break the secret code in the fewest number of guesses.\n'
-          'You provide 4 colors as a guess of the secret code, if it is not the secret code you will be provided with feedback about your guess\n'
+          '-----------------------------------------------------------------------------------------------------------------------------------------------\n'
+          'As the Codemaker: Your goal is to set a mystery code so cunning that it will keep your opponent guessing for as long as possible.\n'
+          'You provide feedback per guess with white and red pins. A red pins states a correct color in the correct place,\n'
+          'and a white pin states a correct color in the wrong place.\n'
+          '-----------------------------------------------------------------------------------------------------------------------------------------------\n'
+          'As the Guesser: You must break the secret code in the fewest number of guesses.\n'
+          'Each turn, you provide 4 colors as a guess of the secret code, if it is not the secret code you will be provided with feedback about your guess\n'
           'A red pins states a correct color in the correct player, a white color states a correct color in the wrong place')
 
 
@@ -155,18 +174,28 @@ def checkPins(guess, hidden_code):
     return amount_red, white_amount
 
 
+def Choose_difficulty():
+    print('Choose difficulty: ')
+    difficulty = input('Normal / Impossible: ')
+    difficulty = difficulty.lower()
+    if 'impos' in difficulty:
+        return 2
+    else:
+        return 1
+
+
 def main():
 
     def player_as_guesser():
         hidden_code = make_hidden_code()
-        print('De computer has made a secret code, try to guess it. \nChoose from: \033[36m(red, green, blue, yellow, brown, orange)\033[35m')
+        print('De computer has made a secret code, try to guess it.\nChoose from: \033[36m(red, green, blue, yellow, brown, orange)\033[35m')
 
         for tries in range(1, 12):
             guess = player_make_guess()
 
-            amount_correct, white_amount = checkPins(guess, hidden_code)
+            red_pin_amount, white_pin_amount = checkPins(guess, hidden_code)
 
-            if amount_correct == 4:
+            if red_pin_amount == 4:
                 End_screen(True)
                 print('Tries needed: '+str(tries))
                 break
@@ -174,18 +203,19 @@ def main():
                 End_screen(False)
                 break
 
-            print('Amount\033[31m red\033[35m pins: '+str(amount_correct))
-            print('Amount\033[39m white\033[35m pins: '+str(white_amount))
+            print('Amount\033[31m red\033[35m pins: '+str(red_pin_amount))
+            print('Amount\033[39m white\033[35m pins: '+str(white_pin_amount))
 
         print('The secret code was: \033[36m'+str(hidden_code)+'\033[35m')
 
     def computer_as_guesser():
+        Difficuty = Choose_difficulty()
         all_possible_combinations = make_all_possibilities()
         hidden_code = PlayerInput_HiddenCode()
         guess = ['red', 'red', 'green', 'blue']  # First guess
 
         # Game starts here
-        for tries in range(1, 12):
+        for tries in range(1, 11):
             print('\nThe computer gave \033[36m'+str(guess)+'\033[35m as guess')
 
             redPinCount, whitePinCount = None, None
@@ -197,15 +227,15 @@ def main():
                 End_screen(False)
                 print('Tries needed: ' + str(tries))
                 break
-            if tries == 11:
+            if tries == 10:
                 End_screen(True)
                 break
 
-            all_possible_combinations = Remove_possibilities(all_possible_combinations, guess, redPinCount, whitePinCount)
-            guess = make_next_guess(all_possible_combinations)
+            all_possible_combinations = Remove_possibilities(all_possible_combinations, guess, redPinCount, whitePinCount, Difficuty)
+            guess = make_next_guess(all_possible_combinations, Difficuty)
 
     while True:
-        print('Do you want to play as guesser or codemaker?')
+        print('Do you want to play as Guesser or Codemaker?')
         Game_mode = input('Guesser / Codemaker / Manual: ')
         Game_mode = Game_mode.lower()
         if 'gues' in Game_mode:
