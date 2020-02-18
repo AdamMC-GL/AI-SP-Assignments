@@ -1,5 +1,6 @@
 import sys
 import random
+import itertools
 
 
 def PlayerInput_HiddenCode():
@@ -31,11 +32,9 @@ def make_all_possibilities():
     # Makes a large list of every single possible combination of guesses.
     all_colors = ('red', 'green', 'blue', 'yellow', 'brown', 'orange')
     all_possibilities = []
-    for i in all_colors:  # Looks at every possible color and via 4 nested loops it puts every color once, with every other color.
-        for j in all_colors:
-            for k in all_colors:
-                for l in all_colors:
-                    all_possibilities.append([i, j, k, l])
+    for products in itertools.product(all_colors, repeat=4):  # Use of itertools: Bron: Nonne & Casper.
+        all_possibilities.append(products)
+
     return all_possibilities
 
 
@@ -49,7 +48,8 @@ def Remove_possibilities(all_possible_combinations, guess, redPinCount, whitePin
 
         return Return_list
 
-    else:
+    else:  # (Own algorithm), removes impossible guesses, but randomly skips over the next after removing one
+        # when it skips, it could skip over one that wouldn't be removed anyway, but it could sometimes skip over another one that should've been.
         all_possible_combinations.remove(guess)
         for Every_combination in all_possible_combinations:
             if checkPins(guess, Every_combination) != (redPinCount, whitePinCount):
@@ -175,7 +175,7 @@ def checkPins(guess, hidden_code):
 
 
 def Choose_difficulty():
-    print('Choose difficulty: ')
+    print('Choose difficulty: ')  # (Own algorithm) Normal difficulty makes the player win 58% of the time.
     difficulty = input('Normal / Impossible: ')
     difficulty = difficulty.lower()
     if 'impos' in difficulty:
@@ -190,21 +190,21 @@ def main():
         hidden_code = make_hidden_code()
         print('De computer has made a secret code, try to guess it.\nChoose from: \033[36m(red, green, blue, yellow, brown, orange)\033[35m')
 
-        for tries in range(1, 12):
+        for tries in range(1, 11):
             guess = player_make_guess()
 
-            red_pin_amount, white_pin_amount = checkPins(guess, hidden_code)
+            redPinCount, whitePinCount = checkPins(guess, hidden_code)
 
-            if red_pin_amount == 4:
+            if redPinCount == 4:
                 End_screen(True)
                 print('Tries needed: '+str(tries))
                 break
-            elif tries == 11:
+            elif tries == 10:
                 End_screen(False)
                 break
 
-            print('Amount\033[31m red\033[35m pins: '+str(red_pin_amount))
-            print('Amount\033[39m white\033[35m pins: '+str(white_pin_amount))
+            print('Amount\033[31m red\033[35m pins: '+str(redPinCount))
+            print('Amount\033[39m white\033[35m pins: '+str(whitePinCount))
 
         print('The secret code was: \033[36m'+str(hidden_code)+'\033[35m')
 
